@@ -2,13 +2,23 @@
 require_once 'includes/auth.php';
 require_once 'config.php';
 
+// make PHP default IST for this page
+date_default_timezone_set('Asia/Kolkata');
+
 $lastScore = $_SESSION['last_score'] ?? null;
 $lastScoreTime = null;
 if ($lastScore && isset($lastScore['time'])) {
     $lastScoreTime = DateTime::createFromFormat('Y-m-d H:i:s T', $lastScore['time'], new DateTimeZone('Asia/Kolkata'));
 }
 
-$recentStmt = $pdo->prepare('SELECT qa.score, qa.total_questions, qa.created_at, q.title FROM quiz_attempts qa JOIN quizzes q ON qa.quiz_id = q.id WHERE qa.user_id = :user_id ORDER BY qa.created_at DESC LIMIT 5');
+$recentStmt = $pdo->prepare(
+    'SELECT qa.score, qa.total_questions, qa.created_at, q.title
+     FROM quiz_attempts qa
+     JOIN quizzes q ON qa.quiz_id = q.id
+     WHERE qa.user_id = :user_id
+     ORDER BY qa.created_at DESC
+     LIMIT 5'
+);
 $recentStmt->execute(['user_id' => $_SESSION['user_id']]);
 $recentAttempts = $recentStmt->fetchAll();
 ?>
@@ -27,7 +37,7 @@ $recentAttempts = $recentStmt->fetchAll();
         <div class="top-nav__actions">
             <a href="quizzes.php">Take another quiz</a>
             <a href="leaderboard.php">Leaderboard</a>
-             <?php if (!empty($_SESSION['is_admin'])): ?>
+            <?php if (!empty($_SESSION['is_admin'])): ?>
                 <a href="manage_quizzes.php">Manage quizzes</a>
             <?php endif; ?>
             <a href="logout.php" class="danger">Logout</a>
@@ -39,7 +49,11 @@ $recentAttempts = $recentStmt->fetchAll();
             <h1>Your Latest Score</h1>
             <?php if ($lastScore): ?>
                 <?php $displayTime = $lastScoreTime ? $lastScoreTime->format('M j, Y g:i a T') : $lastScore['time']; ?>
-                <p class="score">You scored <strong><?= $lastScore['score'] ?></strong> out of <strong><?= $lastScore['total'] ?></strong> on <strong><?= htmlspecialchars($lastScore['quiz_title'] ?? 'this quiz') ?></strong> at <?= htmlspecialchars($displayTime) ?>.</p>
+                <p class="score">
+                    You scored <strong><?= $lastScore['score'] ?></strong> out of <strong><?= $lastScore['total'] ?></strong>
+                    on <strong><?= htmlspecialchars($lastScore['quiz_title'] ?? 'this quiz') ?></strong>
+                    at <?= htmlspecialchars($displayTime) ?>.
+                </p>
             <?php else: ?>
                 <p class="muted">Complete a quiz to see your score.</p>
             <?php endif; ?>
@@ -61,8 +75,8 @@ $recentAttempts = $recentStmt->fetchAll();
                     <tbody>
                         <?php foreach ($recentAttempts as $attempt): ?>
                             <?php
+                                // created_at was inserted in IST by submit_quiz.php
                                 $attemptTime = new DateTime($attempt['created_at']);
-                                $attemptTime->setTimezone(new DateTimeZone('Asia/Kolkata'));
                             ?>
                             <tr>
                                 <td><?= htmlspecialchars($attempt['title']) ?></td>
