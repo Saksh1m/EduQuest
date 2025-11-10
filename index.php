@@ -1,12 +1,13 @@
 <?php
 session_start();
 if (isset($_SESSION['user_id'])) {
-    header('Location: quiz.php');
+    header('Location: quizzes.php');
     exit;
 }
 
 $usernameCookie = $_COOKIE['eduquest_username'] ?? '';
 $message = isset($_GET['message']) ? htmlspecialchars($_GET['message']) : '';
+$showRegister = isset($_GET['showRegister']) && $_GET['showRegister'] === '1';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -39,9 +40,10 @@ $message = isset($_GET['message']) ? htmlspecialchars($_GET['message']) : '';
 
                 <button type="submit">Login</button>
             </form>
+            <button type="button" id="show-register" class="button secondary<?= $showRegister ? ' hidden' : '' ?>">Register new user</button>
         </section>
 
-        <section class="card">
+        <section class="card<?= $showRegister ? '' : ' hidden' ?>" id="register-card" data-open="<?= $showRegister ? '1' : '0' ?>">
             <h2>Create an account</h2>
             <form action="register.php" method="post" class="form">
                 <label for="register-username">Username</label>
@@ -55,11 +57,13 @@ $message = isset($_GET['message']) ? htmlspecialchars($_GET['message']) : '';
 
                 <button type="submit">Register</button>
             </form>
+            <button type="button" id="cancel-register" class="button link">Back to login</button>
         </section>
     </main>
 
     <footer class="footer">
         <p>&copy; <?= date('Y') ?> EduQuest. Learn, compete, and grow.</p>
     </footer>
+    <script src="assets/scripts.js" defer></script>
 </body>
 </html>
